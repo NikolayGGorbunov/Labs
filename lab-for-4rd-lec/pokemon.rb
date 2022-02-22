@@ -1,14 +1,13 @@
+require 'stringio'
+
 def add_pokemon(arr)
-  print "Как зовут покемона?\n"
-  pokemon_name = gets.chomp
-  print "Какого он цвета?\n"
-  pokemon_color = gets.chomp
-  arr << Hash['name', pokemon_name, 'color', pokemon_color]
+  puts "Как зовут покемона?"
+  pokemon_name = $stdin.gets.chomp
+  puts "Какого он цвета?"
+  pokemon_color = $stdin.gets.chomp
+  arr << Hash[{name: pokemon_name, color: pokemon_color}]
 end
 
-#Я не был уверен стоит ли оставлять вывод по типу puts pokemons
-#В таком выводе разделителем выступал "=>" а также имена ключей заключались в кавычки,
-#Поэтому я написал метод show которыйй выводит массив хэшэй в формате который был дан в задании
 pokemons = Array.new
 
 print "Сколько покемонов добавить?\n"
@@ -17,3 +16,17 @@ for i in 0..n-1 do
   add_pokemon(pokemons)
 end
 puts pokemons
+
+#-------------------TESTS-------------------
+require 'rspec'
+
+RSpec.describe 'add_pokemon method' do
+  before do
+    @arr = Array.new()
+  end
+
+  it 'wait name and color of pokemon from user and add this pokemon into array' do
+    allow($stdin).to receive(:gets).and_return("TestName\n", "TestColor\n")
+    expect(add_pokemon(@arr)).to eq([{name: 'TestName',color: 'TestColor'}])
+  end
+end
