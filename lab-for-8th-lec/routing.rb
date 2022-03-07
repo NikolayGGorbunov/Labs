@@ -9,9 +9,10 @@ module Resource
       print 'Choose verb to interact with resources (GET/POST/PUT/DELETE) / q to exit: '
       verb = gets.chomp
       break if verb == 'q'
-      next if verb.empty?
-
-
+      if verb.empty? || !routes.include?(verb)
+        puts "Wrong verb. Try another."
+        next
+      end
       action = nil
 
       if verb == 'GET'
@@ -34,12 +35,12 @@ class PostsController
   end
 
   def index
-    @posts.map.with_index {|post, index| puts "#{index}. #{post}"}
+    @posts.map.with_index {|post, index| puts "#{index+1}. #{post}"}
   end
 
   def show
     print 'Choose id of post: '
-    id = gets.chomp.to_i
+    id = gets.chomp.to_i - 1
     puts @posts[id].nil? ? "The post doesn't exist" : @posts[id]
   end
 
@@ -50,7 +51,7 @@ class PostsController
 
   def update
     print 'Choose id of post: '
-    id = gets.chomp.to_i
+    id = gets.chomp.to_i - 1
     if @posts[id].nil?
       puts "The post doesn't exist"
     else
@@ -61,11 +62,11 @@ class PostsController
 
   def destroy
     print 'Choose id of post: '
-    id = gets.chomp.to_i
+    id = gets.chomp.to_i - 1
     if @posts[id].nil?
       puts "The post doesn't exist"
     else
-      @posts[id] = 'DELETED'
+      @posts.delete_at(id)
       puts 'The post has been deleted'
     end
   end
@@ -78,12 +79,14 @@ class Router
 
   def init
     resources(PostsController, 'posts')
+    resources(PostsController, 'comments')
 
     loop do
       print 'Choose resource you want to interact (1 - Posts, 2 - Comments, q - Exit): '
       choise = gets.chomp
 
       PostsController.connection(@routes['posts']) if choise == '1'
+      PostsController.connection(@routes['comments']) if choise == '2'
       break if choise == 'q'
     end
 
