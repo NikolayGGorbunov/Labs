@@ -35,7 +35,7 @@ class PostsController
   end
 
   def index
-    @posts.map.with_index {|post, index| puts "#{index+1}. #{post}"}
+    @posts.map.with_index {|post, index| puts "#{index+1}.#{post}"}
   end
 
   def show
@@ -45,7 +45,7 @@ class PostsController
   end
 
   def create
-    puts "Write yout post here:"
+    puts "Write your post here:"
     @posts << gets
   end
 
@@ -72,6 +72,51 @@ class PostsController
   end
 end
 
+class CommentsController
+  extend Resource
+
+  def initialize
+    @comments = []
+  end
+
+  def index
+    @comments.map.with_index {|post, index| puts "#{index+1}.#{post}"}
+  end
+
+  def show
+    print 'Choose id of comment: '
+    id = gets.chomp.to_i - 1
+    puts @comments[id].nil? ? "The comment doesn't exist" : @comments[id]
+  end
+
+  def create
+    puts "Write your comment here:"
+    @comments << gets
+  end
+
+  def update
+    print 'Choose id of comment: '
+    id = gets.chomp.to_i - 1
+    if @comments[id].nil?
+      puts "The comment doesn't exist"
+    else
+      puts "Write new comment here:"
+      @comments[id] = gets
+    end
+  end
+
+  def destroy
+    print 'Choose id of comment: '
+    id = gets.chomp.to_i - 1
+    if @comments[id].nil?
+      puts "The comment doesn't exist"
+    else
+      @comments.delete_at(id)
+      puts 'The comment has been deleted'
+    end
+  end
+end
+
 class Router
   def initialize
     @routes = {}
@@ -79,14 +124,14 @@ class Router
 
   def init
     resources(PostsController, 'posts')
-    resources(PostsController, 'comments')
+    resources(CommentsController, 'comments')
 
     loop do
       print 'Choose resource you want to interact (1 - Posts, 2 - Comments, q - Exit): '
       choise = gets.chomp
 
       PostsController.connection(@routes['posts']) if choise == '1'
-      PostsController.connection(@routes['comments']) if choise == '2'
+      CommentsController.connection(@routes['comments']) if choise == '2'
       break if choise == 'q'
     end
 
