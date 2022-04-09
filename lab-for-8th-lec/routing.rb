@@ -153,5 +153,4 @@ class Router
 end
 
 router = Router.new
-
 router.init
