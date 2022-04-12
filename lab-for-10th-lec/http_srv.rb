@@ -2,22 +2,55 @@ require 'socket'
 require 'rack'
 
 class CashMachine
-  @@balance = 100.0
+  attr_accessor :balance
+  def initialize
+    @balance = 100.0
+  end
 
   def call(env)
+      content_type = {'Content_type' => 'text/plain'}
+      error_msg = 'Error: '
       case env["PATH_INFO"]
       when '/balance'
-        [200, {'Content_Type' => 'text/plain'}, ["Your balance is: #{@@balance}"]]
+        [200, content_type, ["Your balance is: #{@balance}"]]
       when '/deposit'
-        value = env['OPT'].split('=')[1].to_i
-        @@balance += value
-        [200, {'Content_Type' => 'text/plain'}, ["Your balance incresed! Current balance is: #{@@balance}"]]
+        value = env['OPT']
+        if value.nil?
+          return [400, content_type, [error_msg << "option is nil"]]
+        else
+          value = value.split('=')[1].to_f
+        end
+        if value > 0.0
+          @balance += value
+          [200, content_type, ["Your balance incresed! Current balance is: #{@balance}"]]
+        elsif value < 0.0
+          [400, content_type, [error_msg << "you can't deposit negative value. Try /withdraw"]]
+        elsif value == 0.0
+          [400, content_type, [error_msg << "wrong value. Please try /deposit?value="]]
+        else
+          [400, content_type, [error_msg << "something went wrong\n", "#{env}"]]
+        end
       when '/withdraw'
-        value = env['OPT'].split('=')[1].to_i
-        @@balance -= value
-        [200, {'Content_Type' => 'text/plain'}, ["Your balance decresed! Current balance is: #{@@balance}"]]
+        value = env['OPT']
+        if value.nil?
+          return [400, content_type, [error_msg << "option is nil."]]
+        else
+          value = value.split('=')[1].to_f
+        end
+        if value > 0.0 && value < @balance
+          @balance -= value
+          [200, content_type, ["Your balance decresed! Current balance is: #{@balance}"]]
+        elsif  value > 0.0 && value > @balance
+          [400, content_type, [error_msg << "you can't withdraw moree then your balance"]]
+        elsif value < 0.0
+          [400, content_type, [error_msg << "you can't withdraw negative value. Try /deposit"]]
+        elsif value == 0.0
+          [400, content_type, [error_msg << "wrong value. Please try /withdraw?value="]]
+        else
+          [400, content_type, [error_msg << "something wen't wrong\n", "#{env}"]]
+        end
       else
-        [400, {'Content_Type' => 'text/plain'}, ["Something went wrong\n", "#{env}"]]
+        [404, content_type, [error_msg << "function not found"]]
       end
   end
 end
@@ -49,4 +82,4 @@ def server_init
   end
 end
 
-server_init
+#server_init
